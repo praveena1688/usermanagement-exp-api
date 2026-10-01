@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+		http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd">
+
+	<flow name="usermanagement-exp-api-main">
+		<http:listener config-ref="httpListenerConfig" path="${https.listener.path}">
+			<http:response statusCode="#[vars.httpStatus default 200]">
+				<http:headers>#[vars.outboundHeaders default {}]</http:headers>
+			</http:response>
+			<http:error-response statusCode="#[vars.httpStatus default 500]">
+				<http:body>#[payload]</http:body>
+				<http:headers>#[vars.outboundHeaders default {}]</http:headers>
+			</http:error-response>
+		</http:listener>
+		<ee:transform doc:name="CommonAttributes" doc:id="4455c394-c1c7-4c4e-9d4c-4376bc289fc7">
+			<ee:variables>
+				<ee:set-variable variableName="txnId"><![CDATA[%dw 2.0
+					output application/java
+					---
+					if (attributes.headers.'x-transaction-id' != null)
+						attributes.headers.'x-transaction-id' as String
+					else '']]>
+				</ee:set-variable>
+				<ee:set-variable variableName="contentType"><![CDATA[%dw 2.0
+					output application/java
+					---
+					attributes.'accept']]>
+				</ee:set-variable>
+				<ee:set-variable variableName="apiName"><![CDATA[%dw 2.0
+					output application/java
+					---
+					attributes.'requestUri']]>
+				</ee:set-variable>
+				<ee:set-variable variableName="operation"><![CDATA[%dw 2.0
+					output application/java
+					---
+					upper(attributes.method)]]>
+				</ee:set-variable>
+				<ee:set-variable variableName="host"><![CDATA[%dw 2.0
+					output application/java
+					---
+					attributes.headers.host]]>
+				</ee:set-variable>
+				<ee:set-variable variableName="scheme"><![CDATA[%dw 2.0
+					output application/java
+					---
+					attributes.scheme]]>
+				</ee:set-variable>
+				<ee:set-variable variableName="clientIp"><![CDATA[%dw 2.0
+					output application/java
+					---
+					attributes.headers.'clientIp' default attributes.headers.'x-real-ip']]>
+				</ee:set-variable>
+				<ee:set-variable variableName="clientId"><![CDATA[%dw 2.0
+					output application/java
+					---
+					attributes.headers.'clientId']]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<apikit:router config-ref="usermanagement-exp-api-config" />
+		<error-handler ref="apiErrorHandler" />
+	</flow>
+
+	<!-- ############ HEALTH CHECK ############ -->
+	<flow name="get:\v1\healthcheck:usermanagement-exp-api-config">
+		<ee:transform doc:name="PingResponse" doc:id="6fa04498-71b9-4092-8fec-4799f7234297">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+					output application/json
+					---
+					{
+						message: "Application Health is OK"
+					}]]>
+				</ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+
+	<!-- ######## ACCOUNT ######## -->
+	<flow name="get:\v1\account:usermanagement-exp-api-config">
+		<flow-ref doc:name="GetAccountDetailsByUserId" doc:id="045e02ae-ddcb-4679-aabf-7a568ea6f875" name="accountDetailsByUserIdSubFlow" />
+	</flow>
+	<flow name="post:\v1\account\register\portal:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="AccountRegister" doc:id="2cdfe096-0f21-427a-9246-16668163a13d" name="accountRegistrationSubFlow" />
+	</flow>
+	<flow name="put:\v1\account\register\portal:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="UpdateAccountDetailsByUserId" doc:id="4aca84fa-9d17-4010-a701-c02dbc57b639" name="updateAccountDetailsByUserIdSubFlow" />
+	</flow>
+	<flow name="patch:\v1\account\register\portal:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="AccountRegisterSync" doc:id="492a078f-821c-4905-8348-7c449bf2f653" name="accountRegistrationSyncSubFlow" />
+	</flow>
+	<flow name="patch:\v1\account\register\portal\tcacceptance:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="TCAcceptance" doc:id="08dc8c52-2ef9-448d-bbb2-c1c267b8b80c" name="tcAcceptanceSubFlow" />
+	</flow>
+	<flow name="get:\v1\account\match:usermanagement-exp-api-config">
+		<flow-ref doc:name="GetAccountDetailsMatch" doc:id="3cccbe1c-5593-4be9-9f14-9fc465082ade" name="accountDetailsMatchSubFlow" />
+	</flow>
+	<flow name="post:\v1\account\register\users:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="UserRegister" doc:id="2b267268-8846-4c7c-b72f-f1e94df99184" name="userRegistrationSubFlow" />
+	</flow>
+	<flow name="delete:\v1\account\register\users\(userId):usermanagement-exp-api-config">
+		<flow-ref doc:name="DeleteUser" doc:id="b572c75e-921a-4b1b-afc2-600d39fe2639" name="deleteUserSubFlow" />
+	</flow>
+	<flow name="put:\v1\account\status:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="AccountStatusSync" doc:id="6c8dbfa1-8de8-4b93-b47c-2b8d96f4f4a8" name="accountStatusSyncSubFlow" />
+	</flow>
+
+	<!-- ######## NOTIFICATIONS ######## -->
+	<flow name="get:\v1\account\notifications:usermanagement-exp-api-config">
+		<flow-ref doc:name="GetAccountNotificationsByUserId" doc:id="564468f4-1a3f-442d-8f56-187c140d7ffc" name="accountNotificationsByUserIdSubFlow" />
+	</flow>
+	<flow name="get:\v1\account\notifications\(notificationId):usermanagement-exp-api-config">
+		<flow-ref doc:name="GetAccountNotificationById" doc:id="437da8da-f926-43b4-bea8-cd702a2c7b6e" name="accountNotificationByIdSubFlow" />
+	</flow>
+	<flow name="put:\v1\account\notifications:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="UpdateAccountNotificationsByUserId" doc:id="266a327c-740e-4b39-9118-b3d9b9f683d3" name="updateAccountNotificationsByUserIdSubFlow" />
+	</flow>
+	<!-- ADMIN -->
+	<flow name="post:\v1\account\notifications\admin:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="CreateAccountNotificationsByUserId" doc:id="ddb7e76f-e4d4-4097-8302-0b7597bc9a07" name="insertAccountNotificationsAdminByUserIdSubFlow" />
+	</flow>
+	<flow name="put:\v1\account\notifications\admin:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="UpdateAccountNotificationsByUserId" doc:id="c097e97d-15e9-444b-86a7-40a98e464109" name="updateAccountNotificationsAdminByUserIdSubFlow" />
+	</flow>
+	<flow name="get:\v1\account\notifications\admin\audit\(notificationId):usermanagement-exp-api-config">
+		<flow-ref doc:name="GetAccountNotificationsAuditById" doc:id="c2f96044-775c-4745-bff1-9ff7e6803a8c" name="accountNotificationsAuditAdminByIdSubFlow" />
+	</flow>
+	<flow name="get:\v1\account\notifications\admin:usermanagement-exp-api-config">
+		<flow-ref doc:name="GetAccountNotificationsByUserId" doc:id="53415b82-d7a6-4fbc-a266-a0e1f2d22ddd" name="accountNotificationsAdminByUserIdSubFlow" />
+	</flow>
+	<flow name="get:\v1\account\notifications\admin\(notificationId):usermanagement-exp-api-config">
+		<flow-ref doc:name="GetAccountNotificationById" doc:id="69b40c47-a21e-4703-860b-3b35a51ff042" name="accountNotificationAdminByIdSubFlow" />
+	</flow>
+
+	<!-- ######## CATEGORIES ######## -->
+	<flow name="get:\v1\categories\(categoryId):usermanagement-exp-api-config">
+		<flow-ref doc:name="GetCategoriesById" doc:id="276cdd26-ca5f-49e0-a93a-43364a11fb01" name="getCategoriesByIdSubFlow" />
+	</flow>
+
+	<!-- ######## CONTENT ######## -->
+	<flow name="get:\v1\content\tcagreements:usermanagement-exp-api-config">
+		<flow-ref doc:name="GetTCList" doc:id="c0131b09-6cc2-4fec-bda8-b6b6a62510b2" name="getTcAgreementsSubFlow" />
+	</flow>
+	<flow name="post:\v1\content\tcagreements:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="AddTC" doc:id="c7fb28bb-b911-42f0-bed0-f86cf5d7e1a4" name="addTcAgreementsSubFlow" />
+	</flow>
+	<flow name="put:\v1\content\tcagreements:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="UpdateTC" doc:id="0c635e68-aeea-41aa-a9b1-c7e28e67a670" name="updateTcAgreementsSubFlow" />
+	</flow>
+	<flow name="get:\v1\content\tcagreements\(tcId):usermanagement-exp-api-config">
+		<flow-ref doc:name="GetTCById" doc:id="77f3e83d-5570-487a-900d-91aaaa41d91f" name="getTcAgreementsByIdSubFlow" />
+	</flow>
+
+	<!-- ######## ADDRESSES ######## -->
+	<flow name="get:\v1\addresses\(postcode):usermanagement-exp-api-config" doc:id="2d47dcc7-7cb2-44a5-b83b-68e42d2cb3d8">
+		<flow-ref doc:name="GetAddressByPostCode" doc:id="6ef834b4-ea36-453e-a363-fd61c6f5c2b1" name="getAddressByPostCodeSubFlow" />
+	</flow>
+
+	<!-- ######## SUPPORT ######## -->
+	<flow name="post:\v1\support:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="CreateSupportTicket" doc:id="f1a4a41c-a279-4adb-90ef-17780f99a4a5" name="createSupportTicketSubFlow" />
+	</flow>
+	<flow name="put:\v1\support:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="UpdateTicket" doc:id="b8c9d0e1-2fda-4f4f-fb6c-7d8e9fa0b1c2" name="updateTicketSubFlow" />
+	</flow>
+	<flow name="get:\v1\support\(ticketId):usermanagement-exp-api-config">
+		<flow-ref doc:name="GetTicketDetailsByTicketId" doc:id="a93cf037-0e92-4c1a-bf6c-e93fddeba361" name="getTicketDetailsByTicketIdSubFlow" />
+	</flow>
+
+	<!-- ######## EMAIL NOTIFICATIONS ######## -->
+	<flow name="post:\v1\notifications\email:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="SendEmail" doc:id="f22e7981-5aac-400d-88c7-8d09d1baedae" name="sendEmailSubFlow" />
+	</flow>
+	<flow name="post:\v1\notifications\recaptcha:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="Recaptcha" doc:id="97e7a360-4f1a-4140-84c2-7228e9257585" name="recaptchaEmailSubFlow" />
+	</flow>
+
+	<!-- ######## ORGANISATION ######## -->
+	<flow name="get:\v1\organisations:usermanagement-exp-api-config">
+		<flow-ref doc:name="GetOrganisationList" doc:id="7d5329c8-afed-49a0-9b24-a3415ccd5d6c" name="getOrgListSubFlow" />
+	</flow>
+	<flow name="post:\v1\organisations\emaildomains:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="GetEmailDomains" doc:id="527b8d3a-2f46-4ac7-b502-ecc2e9fb6cd2" name="getEmailDomainsSubFlow" />
+	</flow>
+	<flow name="get:\v1\organisations\(orgId):usermanagement-exp-api-config">
+		<flow-ref doc:name="GetOrgDetailsById" doc:id="7427899b-a087-4bc7-97aa-7e58823bf23a" name="getOrgDetailsByIdSubFlow" />
+	</flow>
+	<flow name="post:\v1\organisations\(orgId)\branch:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="CreateBranchById" doc:id="145b6eab-9acd-4cb5-9f08-75c8bbb31293" name="createBranchByIdSubFlow" />
+	</flow>
+	<flow name="put:\v1\organisations\(orgId):application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="UpdateOrgDetailsById" doc:id="422a9359-3b42-44aa-a51e-416e8c8175be" name="updateOrgDetailsByIdSubFlow" />
+	</flow>
+	<flow name="get:\v1\organisations\(orgId)\users:usermanagement-exp-api-config">
+		<flow-ref doc:name="GetUsersById" doc:id="af1b0708-6c61-48d5-8911-1ad0bf3a5409" name="getUsersByIdSubFlow" />
+	</flow>
+	<flow name="get:\v1\organisations\(orgId)\branch:usermanagement-exp-api-config">
+		<flow-ref doc:name="GetBranchList" doc:id="cc5f7484-c453-46db-9274-0ae64f80ef80" name="getBranchListSubFlow" />
+	</flow>
+	<flow name="get:\v1\organisations\(orgId)\branch\(branchId):usermanagement-exp-api-config">
+		<flow-ref doc:name="GetBranchDetailsById" doc:id="91d34517-0cc5-4400-8c3c-5f5b99449570" name="getBranchDetailsByIdSubFlow" />
+	</flow>
+	<flow name="put:\v1\organisations\(orgId)\branch\(branchId):application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="UpdateBranchDetailsById" doc:id="a99c9d5e-bcdf-47a3-82a5-7fe2e272f49c" name="updateBranchDetailsByIdSubFlow" />
+	</flow>
+	<flow name="post:\v1\organisations\(orgId)\branch\(branchId)\users:application\json:usermanagement-exp-api-config">
+		<flow-ref doc:name="createUsers" doc:id="bae97466-8adc-4465-8717-e32e79c9f494" name="createUsersSubFlow" />
+	</flow>
+	<flow name="get:\v1\organisations\cases\(caseId):usermanagement-exp-api-config">
+		<flow-ref doc:name="GetCaseDetailsById" doc:id="bbf14a9d-bc8b-4828-8203-8d2db6b91ae4" name="getCaseDetailsByIdSubFlow" />
+	</flow>
+	<flow name="get:\v1\organisations\(orgId)\actingonbehalfof:usermanagement-exp-api-config">
+		<flow-ref doc:name="GetActingOnBehalfOfById" doc:id="97618145-431f-4c9e-9954-8cce313c45e8" name="getActingOnBehalfOfByIdSubFlow" />
+	</flow>
+	<flow name="get:\v1\organisations\associatedorganisations:usermanagement-exp-api-config" doc:id="c8568727-8d07-48d4-a0c1-3484393c8541">
+		<flow-ref doc:name="getAssociatedOrganisationsSubFlow" doc:id="10b4617e-f05e-4b4d-8a53-3a2cb6401085" name="getAssociatedOrganisationsSubFlow" />
+	</flow>
+	<flow name="get:\v1\organisations\insurerselection:usermanagement-exp-api-config" doc:id="780e4eb5-1256-4a25-a263-f33fb36b4037">
+		<flow-ref doc:name="getInsurerSelectionSubFlow" doc:id="ac5eea46-1440-4031-a8cf-95d0bb412f6b" name="getInsurerSelectionSubFlow" />
+	</flow>
+
+</mule>
