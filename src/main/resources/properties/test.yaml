@@ -1,0 +1,39 @@
+api:
+  id: "18474827"
+
+# TLS CONFIG
+https:
+  listener:
+    tls:
+      keystore:
+        path: "certificates/wildcard_mibtest_org_uk.pfx"
+        keyPassword: "![c0bqAVh7jAo3FEH2qDdILAeCPH90tFi2]"
+        password: "![c0bqAVh7jAo3FEH2qDdILAeCPH90tFi2]"
+
+# HTTP REQUEST CONFIG
+systemapi:
+  azuresql:
+    host: "mib-azuresql-sys-api-test"
+    port: "8081"
+    clientId: "![8jPH8unHwj+yASbCk8TnmJ2cUYsDXt8l]"
+    clientSecret: "![lcchpVdhvr+/iTiCu/Y1Y9ZM7uQsi+kKbl/i1P3iTKzz4yAjnYQhmYDQGp0Uf/Ic]"
+  azuresqlclaims:
+    host: "mib-azuresql-claims-sys-api-test"
+    port: "8081"
+    clientId: "![8jPH8unHwj+yASbCk8TnmJ2cUYsDXt8l]"
+    clientSecret: "![lcchpVdhvr+/iTiCu/Y1Y9ZM7uQsi+kKbl/i1P3iTKzz4yAjnYQhmYDQGp0Uf/Ic]"
+  utility:
+    host: "mib-utility-sys-api-test"
+    port: "8081"
+    clientId: "![8jPH8unHwj+yASbCk8TnmJ2cUYsDXt8l]"
+    clientSecret: "![lcchpVdhvr+/iTiCu/Y1Y9ZM7uQsi+kKbl/i1P3iTKzz4yAjnYQhmYDQGp0Uf/Ic]"
+
+# ENCRYPTION KEY
+encryption:
+  key: "![VVEdunO08pQfp7/pzHbB+xVqRlztNjrU]"
+
+# EMAIL BODY
+email:
+  fromname: "MIB"
+  toaddress: "navigatesupport@mib.org.uk"
+  subject: "MIB - Unity Test Email - Guest Login"
