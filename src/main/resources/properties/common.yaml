@@ -1,0 +1,223 @@
+# APP CONFIG
+app:
+  name: "usermanagement-exp-api-${mule_env}"
+
+log:
+  maskFields: ""
+
+error:
+  message:
+    generic: "Sorry Our Systems are not available right now. Please try again later."
+
+account:
+  dummy:
+    roleId: "1"
+    userId: "dummy@mib.org.uk"
+
+api:
+  secret:
+    expiry: "180" # IN DAYS
+
+vm:
+  maxMsgQueue: "10"
+
+feature:
+  token:
+    encryption: "true"
+
+os:
+  maxEntries: "5000"
+  expirationInterval: "10" #IN-MINUTES
+  lookup:
+    ttl: "1440" #IN-MINUTES
+
+# EMAIL BODY
+email:
+  admin:
+    fromName: "MIB"
+    fromAddress: "noreply-navigate@mib.org.uk"
+    bccAddress: "engagement@mib.org.uk"
+    bodyMimeType: "text/html"
+    subject: "Navigate Credentials for %flavour %env"
+    clientCred:
+      # NOTE: body value below was cut off at the right margin in the source screenshot - needs re-verification in Studio
+      body: '<html><body><br>Navigate Credentials<br><br><p style="font-family:times new roman;font-size:150%;">Access Token URL: %accessTokenUrl'
+    sftp:
+      # NOTE: body value below was cut off at the right margin in the source screenshot - needs re-verification in Studio
+      body: '<html><body><br>SFTP Credentials<br><br><p style="font-family:times new roman;font-size:150%;">Username: %username</p><br><p style="fon'
+    bulkAccounts:
+      toAddress: "kaushik.mukherjee3@wipro.com"
+      subject: "Admin Bulk Accounts"
+      body: "<html><body><br>Admin Accounts Status Files Attached</body></html>"
+
+external:
+  systemapi:
+    azuresql: "Azure SQL Database System API"
+    azuresqlclaims: "Azure SQL Claims Database System API"
+    utility:
+      notifications: "Notification - Utility System API"
+      ukvd: "UKVD - Utility System API"
+      servicenow: "Service Now - Utility System API"
+      okta: "OKTA - Utility System API"
+      adls: "Azure Blob Storage - Utility System API"
+      google: "GOOGLE - Utility System API"
+      anypoint: "ANYPOINT - Utility System API"
+      microsoft: "MICROSOFT - Utility System API"
+      sftp: "SFTP - Utility System API"
+      powerbi: "POWERBI - Utility System API"
+      adf: "ADF - Utility System API"
+
+# HTTP LISTENER CONFIG
+#http:
+  #listener:
+    #host: "0.0.0.0"
+    #path: "/api/*"
+  #port: "8081"
+  #private:
+    #port: "8091"
+
+# HTTPS LISTENER CONFIG
+https:
+  listener:
+    host: "0.0.0.0"
+    path: "/api/*"
+  port: "8082"
+  #private:
+    #port: "8092"
+
+response:
+  timeout: "60000" # In Milleseconds
+
+retry:
+  frequency: "2000" # In Milleseconds
+  count: "3"
+
+batch:
+  maxFailed: "0"
+  blockSize: "50"
+  maxConcurrency: "10"
+
+roles:
+  recaptchaEmail: "Contact Us"
+  sendEmail: "Back Office Administrator"
+  #getCategoriesById: "Back Office Administrator,Contact Us,CTV Org Search"
+  getTicketDetailsByTicketId: "Back Office Administrator"
+  #createSupportTicket: "Back Office Administrator"
+  # NOTE: the following role-list values were cut off at the right margin in the source screenshot and need re-verification in Studio
+  addDocuments: "Back Office Administrator,Back Office System Admin - Vehicle Salvage and Theft Data,Back Office System Admin - Motor"
+  updateDocument: "Back Office Administrator,Back Office System Admin - Vehicle Salvage and Theft Data,Back Office System Admin - Motor"
+  getDocumentListById: "Back Office Administrator,Back Office System Admin - Vehicle Salvage and Theft Data,Back Office System Admin"
+  #getDocumentById: "Back Office Administrator,Back Office System Admin - Vehicle Salvage and Theft Data,Back Office System Admin - M"
+  #getDocumentsByDocumentType: "Back Office Administrator,Back Office System Admin - Vehicle Salvage and Theft Data,Back Office System Admin - M"
+  createClientCredentials: "Back Office Administrator"
+  apiDetails: "Back Office Administrator"
+  #createToken: ""
+  #refreshToken: ""
+  #revokeToken: ""
+  #microsoftToken: ""
+  powerBiReports: "Data Submissions,MI & PD Reporting,Back Office Administrator,Back Office System Admin - Vehicle Salvage and Theft Da"
+  adminOrgDetails: "Back Office Administrator"
+  adminOrgDetailsById: "Back Office Administrator"
+  adminUserDetails: "Back Office Administrator"
+  adminUserDetailsById: "Back Office Administrator"
+  adminDeleteUserById: "Back Office Administrator"
+  createAdminUserDetailsById: "Back Office Administrator"
+  adminVrmManagement: "Back Office Administrator"
+  updateAdminUserById: "Back Office Administrator"
+  adminBulkAccounts: "Back Office Administrator"
+  adminRegistrationCasesSync: "Back Office Administrator"
+  adminMigrationOktaLink: "Back Office Administrator"
+  sftpDetails: "Back Office Administrator"
+  runAdfPipeline: "Back Office Administrator"
+  pipelineDetailsByRunId: "Back Office Administrator"
+  #UserOktaApps: ""
+  getAddressByPostCode: "Back Office Administrator,Limited Input User (PREV BRANCH USER),Fraud Investigator,Management User,Full Input User,Lim"
+
+# HTTP REQUEST CONFIG
+systemapi:
+  azuresql:
+    basePath: "/api/v1"
+    v2:
+      basePath: "/api/v2"
+    path:
+      account:
+        accountDetailsByUserId: "/account" # /{userId}
+        accountDetailsMatch: "/account/match"
+        accountStatusSync: "/account/status"
+        notifications:
+          accountNotifications: "/account/notifications" # /{userId}
+          #accountNotificationById: "/account/notifications/{userId}/id/{notificationId}"
+          #accountNotificationsAuditById: "/account/notifications/{userId}/audit/{notificationId}"
+          admin:
+            accountNotifications: "/account/notifications/admin"
+        termsAndConditions: "/account/termsandconditions" #/{userId}
+        register:
+          portal: "/account/register/portal"
+          oneoffsearch: "/account/register/oneoffsearch"
+          annual: "/account/register/annual"
+          users: "/account/register/users"
+      categories: "/categories"
+      #categoryById: "/categories/{categoryid}"
+      organisation: "/organisations"
+      emailDomains: "/organisations/emaildomains"
+      content: "/content/tcagreements"
+      #getContentById: "/content/tcagreements/{tcId}"
+      #contactManagement: "/organisations/{orgId}/contacts"
+      #organisationDetailsById: "/organisation/{orgId}"
+      #branchListByOrgId: "/organisation/{orgId}/branch"
+      documents:
+        "documentTypeList": "/documents/list"
+      admin:
+        orgDetails: "/admin/organisations"
+        userDetails: "/admin/users"
+        userNameByUserId: "/admin/user"
+        sftpUser: "/admin/users/sftp"
+        vrm: "/admin/management/vrms"
+      support:
+        updateTicket: "/support"
+  utility:
+    basePath: "/api/v1"
+    notifications:
+      path:
+        email: "/notifications/email"
+    ukvehicledata:
+      path:
+        addresses: "/ukvehicledata/addresses"
+        #postcodeLookup: "/addresses/{postcode}"
+    servicenow:
+      path:
+        tickets: "/servicenow/cases/support"
+        orgCaseDetails: "/servicenow/cases/registration" # /{caseId}
+        #ticketDetails: "/servicenow/cases/support/{ticketId}"
+        tcAcceptance: "/servicenow/cases/registration/tcacceptance"
+    okta:
+      path:
+        users: "/okta/users"
+        token: "/okta/token"
+        refreshToken: "/okta/token/refresh"
+        revokeToken: "/okta/token/revoke"
+        addGroupToUser: "/okta/users/{userId}/navigategroup"
+        setPassword: "/okta/users/{userId}/setpassword"
+        getUserOktaApps: "okta/users/{userId}/apps"
+    adls:
+      path:
+        documents: "/adls/documents"
+        documentsBatch: "/adls/documents/batch"
+    google:
+      path:
+        recaptcha: "/google/recaptcha"
+    anypoint:
+      path:
+        createClientApps: "/anypoint/clientapp"
+        #apiDetails: "/anypoint/apis/{apiName}/environment/{environment}"
+        apiDetails: "/anypoint/apis"
+    sftp:
+      path:
+        users: "/sftp/localuser"
+        sftpSshKeys: "/sftp/sshkeys"
+    microsoft:
+      path:
+        token: "/microsoft/token"
+    powerbi:
+      path:
+        reports: "/powerbi/reports"
