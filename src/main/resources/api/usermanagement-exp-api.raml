@@ -1,0 +1,138 @@
+#%RAML 1.0
+title: MIB User Management Experience API
+description: <h4><b> MIB User Management Experience API </b></h4>.
+version: v1
+baseUri: https://<host>/<env>/api
+protocols: [ HTTPS ]
+
+documentation:
+  - !include docs/api_doc.raml
+
+uses:
+  commonLibrary: exchange_modules/3a7db107-df23-4c0e-b0ef-bdf34dbe1991/unity-common-library/1.0.3/common-library.raml
+  registerResourceType: resourceTypes/userRegisterResourceTypes.raml
+  accountResourceType: resourceTypes/accountResourceTypes.raml
+  commonResourceType: exchange_modules/3a7db107-df23-4c0e-b0ef-bdf34dbe1991/unity-common-library/1.0.3/resourceTypes/commonExpResourceTypes.raml
+  organisationResourceType: resourceTypes/organisationResourceTypes.raml
+  contentResourceType: resourceTypes/contentResourceTypes.raml
+  documentResourceType: resourceTypes/documentResourceTypes.raml
+  supportResourceType: resourceTypes/supportResourceTypes.raml
+  adminResourceType: resourceTypes/adminResourceType.raml
+  vrmResourceType: resourceTypes/vrmBlockListResourceTypes.raml
+  paymentsResourceType: resourceTypes/paymentsResourceTypes.raml
+
+traits:
+  jwt: !include exchange_modules/3a7db107-df23-4c0e-b0ef-bdf34dbe1991/unity-common-library/1.0.3/traits/jwtHeader.raml
+  pagination: !include exchange_modules/3a7db107-df23-4c0e-b0ef-bdf34dbe1991/unity-common-library/1.0.3/traits/paginationQueryParams.raml
+  dateSearch: !include exchange_modules/3a7db107-df23-4c0e-b0ef-bdf34dbe1991/unity-common-library/1.0.3/traits/dateTimeQueryParams.raml
+  accountSearchHeader: !include traits/accountSearchHeaders.raml
+  errorResponses: !include exchange_modules/3a7db107-df23-4c0e-b0ef-bdf34dbe1991/unity-common-library/1.0.3/traits/errorResponse.raml
+  accountNotifications: !include traits/accountNotificationsQueryParams.raml
+  contacts: !include traits/contactsQueryParams.raml
+  accountMatch: !include traits/accountMatchQueryParams.raml
+  tcSearchHeader: !include traits/tcQueryParams.raml
+  users: !include traits/getUsersResponseByIdQueryParams.raml
+  branchList: !include traits/branchListQueryParams.raml
+  documentById: !include traits/documentByIdQueryParams.raml
+  documentByType: !include traits/documentTypeQueryParams.raml
+  userHeaderNonMandatory: !include traits/userNonMandatoryHeaderParams.raml
+  orgIdHeader: !include traits/orgIdHeader.raml
+  #tcAcceptance: !include traits/tcAcceptanceQueryParams.raml
+  orgNameQpNonMandatory: !include traits/orgNameQueryParams.raml
+  msSystem: !include traits/microsoftTokenQueryParams.raml
+  vrmSearchQueryParams: !include traits/vrmSearchQueryParams.raml
+  adminSearchQueryParams: !include traits/adminUsersQueryParams.raml
+  adminUserListByIdQp: !include traits/adminUsersListByIQueryParams.raml
+  reportTypes: !include traits/reportTypeQueryParams.raml
+  contactType: !include traits/contactsTypeQueryParams.raml
+  contactByIdQp: !include traits/contactByIdQueryParams.raml
+  systemType: !include traits/systemTypeQueryParams.raml
+
+types:
+  portal: !include dataTypes/requestTypes/accountRegisterRequest.raml
+  PORTAL: !include dataTypes/requestTypes/accountDetailsPutRequest.raml
+  portals: !include dataTypes/requestTypes/accountRegisterSyncRequest.raml
+  oneoffsearch: !include dataTypes/requestTypes/accountRegisterOneOffSearchRequest.raml
+  annual: !include dataTypes/requestTypes/accountRegisterAnnualRequest.raml
+  support: !include dataTypes/requestTypes/supportTicketRequest.raml
+  email: !include dataTypes/requestTypes/emailRequest.raml
+  template: !include dataTypes/requestTypes/emailRequest.raml
+  users: !include dataTypes/requestTypes/userRegisterRequest.raml
+  ADMIN: !include dataTypes/requestTypes/accountNotificationsAdminPutRequest.raml
+  admin: !include dataTypes/requestTypes/accountNotificationsAdminPostRequest.raml
+  NOTIFICATIONS: !include dataTypes/requestTypes/accountNotificationsPutRequest.raml
+  ORGANISATIONS: !include dataTypes/requestTypes/orgDetailsByIdPutRequest.raml
+  organisations: !include dataTypes/requestTypes/createBranchPostRequest.raml
+  emaildomains: !include dataTypes/requestTypes/emailDomainsPostRequest.raml
+  contacts: !include dataTypes/requestTypes/contactPostRequest.raml
+  CONTACTS: !include dataTypes/requestTypes/contactPutRequest.raml
+  USERS: !include dataTypes/requestTypes/userUpdateRequest.raml
+  BRANCH: !include dataTypes/requestTypes/branchDetailsPutRequest.raml
+  branch: !include dataTypes/requestTypes/createBranchPostRequest.raml
+  documents: !include dataTypes/requestTypes/addDocumentsRequest.raml
+  DOCUMENTS: !include dataTypes/requestTypes/updateDocumentsRequest.raml
+  user: !include dataTypes/requestTypes/createUserRequest.raml
+  tcagreements: !include dataTypes/requestTypes/tcPostRequest.raml
+  TCAGREEMENTS: !include dataTypes/requestTypes/tcPutRequest.raml
+  Tcacceptance: !include dataTypes/requestTypes/tcAcceptancePatchRequest.raml
+  STATUS: !include dataTypes/requestTypes/accountStatusPutRequest.raml
+  recaptcha: !include dataTypes/requestTypes/recaptchaEmailRequest.raml
+  applications: !include dataTypes/requestTypes/clientAppRegisterPostRequest.raml
+  vrms: !include dataTypes/requestTypes/vrmManagementPostRequest.raml
+  VRMS: !include dataTypes/requestTypes/vrmManagementPostRequest.raml
+  USER: !include dataTypes/requestTypes/adminUserUpdateRequest.raml
+  oktalink: !include dataTypes/requestTypes/emptyRequest.raml
+  runpipeline: !include dataTypes/requestTypes/runAdfPipelineRequest.raml
+  receipt: !include dataTypes/requestTypes/paymentReceiptPostRequest.raml
+  RECEIPT: !include dataTypes/requestTypes/paymentReceiptPutRequest.raml
+  TICKET: !include dataTypes/requestTypes/updateTicketRequest.raml
+  paymentStatus: !include dataTypes/baseTypes/paymentStatus.raml
+
+/v1:
+  /healthcheck:
+    get:
+      description: This API is used to retrieve all details about <<resourcePathName>>
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include examples/healthCheckResponse.json
+
+  /categories:
+    /{categoryId}:
+      type:
+        commonResourceType.getCollection:
+          getResponse: !include examples/categoryListResponse.json
+
+  /content:
+    /tcagreements:
+      type:
+        contentResourceType.tcCollection:
+          getResponse: !include examples/tcGetResponse.json
+          postRequest: !include examples/tcPostRequest.json
+          postResponse: !include examples/tcPostPutResponse.json
+          putRequest: !include examples/tcPutRequest.json
+          putResponse: !include examples/tcPostPutResponse.json
+
+      /{tcId}:
+        type:
+          contentResourceType.getCollection:
+            getResponse: !include examples/tcByIdGetResponse.json
+
+  /organisations:
+    type:
+      organisationResourceType.getCollection:
+        getResponse: !include examples/organisationListGetResponse.json
+
+    /list:
+      type:
+        organisationResourceType.organisationMibListCollection:
+          getResponse: !include examples/organisationMibListGetResponse.json
+
+    /cases:
+      /{caseId}:
+        type:
+          organisationResourceType.getCollection:
+            getResponse: !include examples/caseStatusGetResponse.json
+
+    /{orgId}:
