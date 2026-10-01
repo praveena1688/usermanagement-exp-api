@@ -1,0 +1,7 @@
+{
+    "data": {
+        "enquiryId": "VENU1234",
+        "message": "Payment initiated successfully",
+        "url": "https://payments.worldpay.com/app/hpp/integration/transaction/xxxxxxxxxxxxxxxxxxxxx"
+    }
+}
