@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+
+	<!-- HTTP LISTENER CONFIG -->
+	<http:listener-config name="httpListenerConfig">
+		<!-- <http:listener-connection host="${https.listener.host}" port="${https.port}" protocol="HTTPS" tlsContext="tlsContext"/> -->
+		<http:listener-connection host="${https.listener.host}" port="${https.port}" protocol="HTTP"/>
+	</http:listener-config>
+
+	<!-- TLS CONFIG CONFIG -->
+	<!-- <tls:context name="tlsContext" doc:name="TLS Context" doc:id="4edf990d-d31d-4a96-bfdb-fcc545466448" enabledProtocols="TLSv1.2,TLSv1.3">
+		<tls:key-store type="pkcs12" path="${secure::https.listener.tls.keystore.path}" keyPassword="${secure::https.listener.tls.keystore.keyPassword}"
+			password="${secure::https.listener.tls.keystore.password}"/>
+	</tls:context> -->
+
+	<!-- API KIT CONFIG -->
+	<apikit:config name="usermanagement-exp-api-config" api="usermanagement-exp-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+
+	<!-- SECURE PROPERTY CONFIG -->
+	<configuration-properties doc:name="propertiesConfig" doc:id="1bf1f96b-3667-416f-9af1-8e4e2e5fd317" file="properties/common.yaml" />
+	<secure-properties:config name="securePropertiesConfig" doc:name="Secure Properties Config" doc:id="013fde23-9707-4fa4-b537-c4943226705a" file="properties/${mule_env}.yaml" key="${enc.key}">
+		<secure-properties:encrypt algorithm="Blowfish" mode="CBC" />
+	</secure-properties:config>
+
+	<!-- API AUTO DISCOVERY API -->
+	<api-gateway:autodiscovery apiId="${secure::api.id}" doc:name="apiAutodiscovery" doc:id="52840bd6-f9a7-46fb-8b7b-7c36b4faaa8f" flowRef="usermanagement-exp-api-main" />
+
+	<!-- GLOBAL ERROR HANDLER -->
+	<configuration doc:name="errorConfig" doc:id="8eaa3373-1baf-4e02-9f26-9c24273a2fee" defaultErrorHandler-ref="apiErrorHandler" />
+
+	<!-- OBJECT STORE CONFIG -->
+	<os:object-store name="cacheObjectStore" doc:name="Cache Object store" doc:id="dcc76f44-7c03-4553-9559-72dd1ace18ae" maxEntries="${os.maxEntries}"
+		entryTtl="${os.lookup.ttl}" expirationInterval="${os.expirationInterval}" entryTtlUnit="MINUTES" persistent="false" />
+
+	<!-- CACHE CONFIG -->
+	<ee:object-store-caching-strategy name="userCachingStrategy" doc:name="Caching Strategy" doc:id="a1e3e64a-9419-4658-a5a0-18fb2e6b0611"
+		keyGenerationExpression="#[vars.cacheKey]" objectStore="cacheObjectStore" />
+
+	<!-- HTTP CONFIG -->
+	<http:request-config name="systemApiHttpRequestConfig" doc:name="HTTP Request configuration" doc:id="f0415437-7a82-4b56-ad3c-a7680d53fc8d"
+		basePath="#[vars.systemapi.basePath]" responseTimeout="${response.timeout}">
+		<http:request-connection host="#[vars.systemapi.host]" port="#[vars.systemapi.port]" protocol="HTTPS">
+			<reconnection>
+				<reconnect frequency="${retry.frequency}" count="${retry.count}" />
+			</reconnection>
+			<tls:context >
+				<tls:trust-store insecure="true" path="${secure::https.listener.tls.keystore.path}" password="${secure::https.listener.tls.keystore.keyPassword}" type="jks" />
+			</tls:context>
+		</http:request-connection>
+	</http:request-config>
+
+	<!-- VM CONFIG -->
+	<vm:config name="vmConfig" doc:name="VM Config" doc:id="b5ab3ab3-a138-4bbb-bc2d-b4668847f6ca">
+		<vm:queues>
+			<vm:queue queueName="createBulkUsersQueue" queueType="PERSISTENT" maxOutstandingMessages="${vm.maxMsgQueue}" />
+			<vm:queue queueName="registrationSyncQueue" queueType="PERSISTENT" maxOutstandingMessages="${vm.maxMsgQueue}" />
+		</vm:queues>
+	</vm:config>
+
+</mule>
