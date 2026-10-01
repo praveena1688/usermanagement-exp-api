@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+
+	<!-- GET ORGANISATIONS LIST SUB FLOW -->
+	<sub-flow name="getOrgListSubFlow" doc:id="73374b75-1122-4129-b4dc-7e3b5ad80a6a">
+		<ee:transform doc:name="Entity">
+			<ee:variables>
+				<ee:set-variable variableName="entity"><![CDATA[%dw 2.0
+					output application/java
+					---
+					'getOrganisationList' ]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="StartLog" doc:id="cb0caa8f-d16d-4dd1-baa9-f31059d54a69" name="commonLoggingEntrySubFlow" />
+		<ee:transform doc:name="SetVars" doc:id="4faf1e69-51d6-4f9a-986f-c624db927412">
+			<ee:variables>
+				<ee:set-variable variableName="systemapi"><![CDATA[%dw 2.0
+					output application/java
+					---
+					{
+						host: p('secure::systemapi.azuresql.host'),
+						port: p('secure::systemapi.azuresql.port'),
+						basePath: p('systemapi.azuresql.basePath') default '',
+						entityPath: p('systemapi.azuresql.path.organisation'),
+						clientId: p('secure::systemapi.azuresql.clientId'),
+						clientSecret: p('secure::systemapi.azuresql.clientSecret'),
+						(queryParams: attributes.queryParams) if (!isEmpty(attributes.queryParams)),
+						headers: { userId: attributes.headers.'userId' }
+					}]]>
+				</ee:set-variable>
+				<ee:set-variable variableName="httpMethod"><![CDATA[%dw 2.0
+					output application/java
+					---
+					'GET']]>
+				</ee:set-variable>
+				<ee:set-variable variableName="extApiName"><![CDATA[%dw 2.0
+					output application/java
+					---
+					p('external.systemapi.azuresql')]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="SystemApiCall" doc:id="8e426017-8d5a-4bc1-934e-549a8501a93d" name="systemApiCallSubFlow" />
+		<ee:transform doc:name="GetOrganisationListRes" doc:id="c9236ba2-d338-4377-932f-de8c0b24c928">
+			<ee:variables>
+				<ee:set-variable variableName="logMsg" resource="dwl/logMsg.dwl" />
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="ResLog" doc:id="5f3cbf76-7752-4fd8-91e7-e5a06915c00d" name="commonLoggingExitSubFlow" />
+	</sub-flow>
+
+	<!-- GET BRANCH LIST SUB FLOW -->
+	<sub-flow name="getBranchListSubFlow" doc:id="2f75620f-2ceb-4981-a0f3-c5f30eeb8705">
+		<ee:transform doc:name="Entity">
+			<ee:variables>
+				<ee:set-variable variableName="entity"><![CDATA[%dw 2.0
+					output application/java
+					---
+					'getBranchList' ]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="StartLog" doc:id="b4353b69-a9a5-4739-9ec2-2a05a0cb11cb" name="commonLoggingEntrySubFlow" />
+		<ee:transform doc:name="SetVars" doc:id="3dbab8ec-4cd5-401d-8d04-03e212f65561">
+			<ee:variables>
+				<ee:set-variable variableName="systemapi"><![CDATA[%dw 2.0
+					output application/java
+					---
+					{
+						host: p('secure::systemapi.azuresql.host'),
+						port: p('secure::systemapi.azuresql.port'),
+						basePath: p('systemapi.azuresql.basePath') default '',
+						entityPath: p('systemapi.azuresql.path.organisation') ++ '/' ++ attributes.uriParams.orgId ++ '/branch',
+						clientId: p('secure::systemapi.azuresql.clientId'),
+						clientSecret: p('secure::systemapi.azuresql.clientSecret'),
+						(queryParams: attributes.queryParams) if (!isEmpty(attributes.queryParams)),
+						headers: { userId: attributes.headers.'userId' }
+					}]]>
+				</ee:set-variable>
+				<ee:set-variable variableName="httpMethod"><![CDATA[%dw 2.0
+					output application/java
+					---
+					'GET']]>
+				</ee:set-variable>
+				<ee:set-variable variableName="extApiName"><![CDATA[%dw 2.0
+					output application/java
+					---
+					p('external.systemapi.azuresql')]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="SystemApiCall" doc:id="a5948ed4-7b8d-49ac-b311-c4d6d224053a" name="systemApiCallSubFlow" />
+		<ee:transform doc:name="GetBranchListRes" doc:id="d88c6771-cfed-45ce-8d91-703b2620376a">
+			<ee:message>
+				<ee:set-payload resource="dwl/organisations/branchListRes.dwl" />
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="logMsg" resource="dwl/logMsg.dwl" />
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="ResLog" doc:id="4a409b1b-26be-46ad-b977-b95af27ecfbe" name="commonLoggingExitSubFlow" />
+	</sub-flow>
+
+	<!-- GET ORGANISATIONS DETAILS BY ORG ID SUB FLOW -->
+	<sub-flow name="getOrgDetailsByIdSubFlow" doc:id="2044d305-64ab-47bf-9d36-b443f3935249">
+		<ee:transform doc:name="Entity">
+			<ee:variables>
+				<ee:set-variable variableName="entity"><![CDATA[%dw 2.0
+					output application/java
+					---
+					'getOrganisationDetailsById' ]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="StartLog" doc:id="a2d8275a-e1e4-49fc-b468-d11067cc795f" name="commonLoggingEntrySubFlow" />
+		<ee:transform doc:name="SetVars" doc:id="6fa695b0-c74e-487e-9058-3a73fbfa26ae">
+			<ee:variables>
+				<ee:set-variable variableName="systemapi"><![CDATA[%dw 2.0
+					output application/java
+					---
+					{
+						host: p('secure::systemapi.azuresql.host'),
+						port: p('secure::systemapi.azuresql.port'),
+						basePath: p('systemapi.azuresql.basePath') default '',
+						entityPath: p('systemapi.azuresql.path.organisation') ++ '/' ++ attributes.uriParams.orgId,
+						clientId: p('secure::systemapi.azuresql.clientId'),
+						clientSecret: p('secure::systemapi.azuresql.clientSecret'),
+						(queryParams: attributes.queryParams) if (!isEmpty(attributes.queryParams)),
+						headers: { userId: attributes.headers.'userId' }
+					}]]>
+				</ee:set-variable>
+				<ee:set-variable variableName="httpMethod"><![CDATA[%dw 2.0
+					output application/java
+					---
+					'GET']]>
+				</ee:set-variable>
+				<ee:set-variable variableName="extApiName"><![CDATA[%dw 2.0
+					output application/java
+					---
+					p('external.systemapi.azuresql')]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="SystemApiCall" doc:id="e4c67d6f-8fde-4ce3-9620-3518b4d8c933" name="systemApiCallSubFlow" />
+		<ee:transform doc:name="GetOrgDetailsByIdRes" doc:id="be15d8d6-2d11-4f70-823a-48c882eb7136">
+			<ee:variables>
+				<ee:set-variable variableName="logMsg" resource="dwl/logMsg.dwl" />
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="ResLog" doc:id="ba8fcdce-a54a-4f2d-b395-cc81b827a586" name="commonLoggingExitSubFlow" />
+	</sub-flow>
+
+	<!-- CREATE BRANCH BY ID SUB FLOW -->
+	<sub-flow name="createBranchByIdSubFlow" doc:id="f893e84c-0d9a-444a-9eca-88fa91d06b5b">
+		<ee:transform doc:name="Entity">
+			<ee:variables>
+				<ee:set-variable variableName="entity"><![CDATA[%dw 2.0
+					output application/java
+					---
+					'createBranchById' ]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="StartLog" doc:id="04d6e0b8-513b-4f08-b75e-785892c144ca" name="commonLoggingEntrySubFlow" />
+		<ee:transform doc:name="SetVars" doc:id="159f3ca5-6d57-4954-99f0-ee14c13e380a">
+			<ee:variables>
+				<ee:set-variable variableName="systemapi"><![CDATA[%dw 2.0
+					output application/java
+					---
+					{
+						host: p('secure::systemapi.azuresql.host'),
+						port: p('secure::systemapi.azuresql.port'),
+						basePath: p('systemapi.azuresql.basePath') default '',
+						entityPath: p('systemapi.azuresql.path.organisation') ++ '/' ++ attributes.uriParams.orgId ++ '/branch',
+						clientId: p('secure::systemapi.azuresql.clientId'),
+						clientSecret: p('secure::systemapi.azuresql.clientSecret'),
+						(queryParams: attributes.queryParams) if (!isEmpty(attributes.queryParams)),
+						headers: { userId: attributes.headers.'userId' }
+					}]]>
+				</ee:set-variable>
+				<ee:set-variable variableName="httpMethod"><![CDATA[%dw 2.0
+					output application/java
+					---
+					'POST']]>
+				</ee:set-variable>
+				<ee:set-variable variableName="extApiName"><![CDATA[%dw 2.0
+					output application/java
+					---
+					p('external.systemapi.azuresql')]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="SystemApiCall" doc:id="958412a1-06c1-42fa-a00b-8cf011140739" name="systemApiCallSubFlow" />
+		<ee:transform doc:name="CreateBranchRes" doc:id="02f36cbc-b87f-43ce-9f7b-37f7318b49b1">
+			<ee:variables>
+				<ee:set-variable variableName="logMsg" resource="dwl/logMsg.dwl" />
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="ResLog" doc:id="96e39ce4-ec6a-4adc-bf5f-0467411abf62" name="commonLoggingExitSubFlow" />
+	</sub-flow>
+
+</mule>
