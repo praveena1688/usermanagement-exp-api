@@ -1,0 +1,13 @@
+{
+    "payments": {
+        "vrm": "ABC123",
+        "enquiryDate": "2026-08-18",
+        "enquiryId": "C26090000000724",
+        "receiptId": "C26090000000724",
+        "status": "CAPTURED",
+        "errorRefNumber": "D260910-T113022-M537-94",
+        "errors": [
+            "INVALID CARD DETAILS"
+        ]
+    }
+}

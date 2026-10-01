@@ -1,0 +1,27 @@
+{
+    "payments": {
+        "accidentInvolvement": "INJURED_PARTY",
+        "userInvolvement": "PEDESTRIAN",
+        "otherDtl": "NA",
+        "forename": "venu",
+        "lastName": "malleboina",
+        "emailAddress": "venu.malleboina@wipro.com",
+        "userVrm": "AB12CDE",
+        "thirdPartyVrm": "AB12Chfth",
+        "enquiryDate": "2026-08-18",
+        "userRef": "USR-1001",
+        "receiptId": "VENU1234",
+        "method": "CARD",
+        "status": "CAPTURED",
+        "amount": 100.00,
+        "currency": "GBP"
+    },
+    "resultURLs": {
+        "successURL": "https://enquiry-dev-navigate.mibtest.org.uk/off-vehicle-check/payment-successful",
+        "failureURL": "https://enquiry-dev-navigate.mibtest.org.uk/off-vehicle-check/payment-error",
+        "cancelURL": "https://enquiry-dev-navigate.mibtest.org.uk/off-vehicle-check/your-contact-details",
+        "errorURL": "https://enquiry-dev-navigate.mibtest.org.uk/off-vehicle-check/payment-error",
+        "expiryURL": "https://enquiry-dev-navigate.mibtest.org.uk/off-vehicle-check/payment-error",
+        "pendingURL": "https://enquiry-dev-navigate.mibtest.org.uk/off-vehicle-check/payment-error"
+    }
+}
